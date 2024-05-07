@@ -1,0 +1,218 @@
+﻿@inherits OwningComponentBase
+@using BlazorApp2.Shared
+
+@if (IsEditMode)
+{
+
+    <div class="modal fade show d-block" id="exampleModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Contact</h5>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@Contact" OnSubmit="SaveContact">
+                        <DataAnnotationsValidator />
+
+                        <div class="form-group">
+                            <label for="firstName">First Name:</label>
+                            <InputText id="firstName" @bind-Value="Contact.FirstName" class="form-control" />
+                            <ValidationMessage For="@(() => Contact.FirstName)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lastName">Last Name:</label>
+                            <InputText id="lastName" @bind-Value="Contact.LastName" class="form-control" />
+                            <ValidationMessage For="@(() => Contact.LastName)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <InputText type="email" id="email" @bind-Value="Contact.Email" class="form-control" />
+                            <ValidationMessage For="@(() => Contact.Email)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phoneNumber">Phone Number:</label>
+                            <InputText type="tel" id="phoneNumber" @bind-Value="Contact.PhoneNumber" class="form-control" />
+                            <ValidationMessage For="@(() => Contact.PhoneNumber)" />
+                        </div>
+
+
+
+                    </EditForm>
+                </div>
+
+                <div class="modal-footer justify-content-center">
+
+                    <button type="submit" @onclick="SaveContact" class="btn btn-success" style="width:45%">Edit</button>
+                    <button type="button" @onclick="Cancel" class="btn btn-danger" style="width:45%">Cancel</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+else if (IsAddMode)
+{
+
+
+    <div class="modal fade show d-block" id="exampleModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Create Contact</h5>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@Contact" OnSubmit="SaveContact">
+                        <DataAnnotationsValidator />
+
+                        <div class="form-group">
+                            <label for="firstName">First Name:</label>
+                            <InputText id="firstName" @bind-Value="Contact.FirstName" class="form-control" />
+                            <ValidationMessage For="@(() => Contact.FirstName)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lastName">Last Name:</label>
+                            <InputText id="lastName" @bind-Value="Contact.LastName" class="form-control" />
+                            <ValidationMessage For="@(() => Contact.LastName)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <InputText type="email" id="email" @bind-Value="Contact.Email" class="form-control" />
+                            <ValidationMessage For="@(() => Contact.Email)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phoneNumber">Phone Number:</label>
+                            <InputText type="tel" id="phoneNumber" @bind-Value="Contact.PhoneNumber" class="form-control" />
+                            <ValidationMessage For="@(() => Contact.PhoneNumber)" />
+                        </div>
+
+
+                    </EditForm>
+                </div>
+
+                <div class="modal-footer justify-content-center">
+
+                    <button type="submit"  @onclick="SaveContact" class="btn btn-success" style="width:45%">Create</button>
+                    <button type="button" @onclick="Cancel" class="btn btn-danger" style="width:45%">Cancel</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (IsShowMode)
+
+{
+    <div class="modal fade show d-block" id="exampleModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Details</h5>
+                </div>
+                <div class="modal-body">
+                    <p><strong>First Name:</strong> @Contact.FirstName</p>
+                    <p><strong>Last Name:</strong> @Contact.LastName</p>
+                    <p><strong>Email:</strong> @Contact.Email</p>
+                    <p><strong>Phone Number:</strong> @Contact.PhoneNumber</p>
+                </div>
+
+                <div class="modal-footer justify-content-center">
+
+
+                    <button type="button" class="btn btn-danger w-75" @onclick="CloseContactForm">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+else if (IsDeleteMode)
+
+{
+
+    <div class="modal fade show d-block" id="exampleModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete Contact</h5>
+                </div>
+                <div class="modal-body">
+                    <p><strong>First Name:</strong> @Contact.FirstName</p>
+                    <p><strong>Last Name:</strong> @Contact.LastName</p>
+                    <p><strong>Email:</strong> @Contact.Email</p>
+                    <p><strong>Phone Number:</strong> @Contact.PhoneNumber</p>
+                </div>
+
+                <div class="modal-footer justify-content-center">
+
+
+                    <button type="button" class="btn btn-danger" style="width:45%" @onclick="DeleteContactForm">
+                        Delete
+                    </button>
+                    <button type="button" class="btn btn-secondary" style="width:45%" @onclick="CloseContactForm">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+@code {
+    [Parameter]
+    public Contact Contact { get; set; }
+
+    [Parameter]
+    public bool IsEditMode { get; set; }
+
+    [Parameter]
+    public bool IsAddMode { get; set; }
+
+    [Parameter]
+    public bool IsShowMode { get; set; }
+    
+    [Parameter]
+    public bool IsDeleteMode { get; set; }
+    
+
+    [Parameter]
+    public EventCallback<Contact> OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public EventCallback OnCloseContactForm { get; set; }
+
+    [Parameter]
+    public EventCallback OnDeleteContactForm { get; set; }
+
+    private void SaveContact()
+    {
+        OnSave.InvokeAsync(Contact);
+    }
+
+    private void Cancel()
+    {
+        OnCancel.InvokeAsync();
+    }
+
+    private void CloseContactForm()
+    {
+        OnCloseContactForm.InvokeAsync();
+    }
+
+    private void DeleteContactForm()
+    {
+        OnDeleteContactForm.InvokeAsync();
+    }
+}

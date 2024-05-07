@@ -1,0 +1,244 @@
+﻿@page "/"
+@inject IContactService ContactService
+@inject IJSRuntime JsRuntime
+
+@using BlazorApp2.Shared
+@using BlazorApp2.Client.Components
+
+@* <h3 class="mb-2">Contacts</h3>
+ *@
+
+<button @onclick="AddNewContact" class="btn btn-primary  mb-3">Add Contact</button>
+
+
+@if (Contacts != null && Contacts.Any())
+{
+    <table class="table table-stripe">
+        <thead>
+            <tr>
+                <th>
+                  <button class="btn btn-link p-0 text-black" style="text-decoration: none;" @onclick="() => ToggleSortOrder(nameof(Contact.FirstName))">
+                        First Name
+                        @if (currentSortProperty == nameof(Contact.FirstName))
+                        {
+                            @if (ascendingOrder)
+                            {
+                                <span>&#9650;</span>
+                            }
+                            else
+                            {
+                                <span>&#9660;</span>
+                            }
+                        }
+                        else
+                        {
+                            <span>&nbsp;&nbsp;&nbsp;</span>
+                        }
+                    </button>
+                </th>
+                <th>
+                    <button class="btn btn-link p-0 text-black" style="text-decoration: none;" @onclick="() => ToggleSortOrder(nameof(Contact.LastName))">
+                        Last Name
+                        @if (currentSortProperty == nameof(Contact.LastName))
+                        {
+                            @if (ascendingOrder)
+                            {
+                                <span>&#9650;</span> 
+                            }
+                            else
+                            {
+                                <span>&#9660;</span> 
+                            }
+                        }
+                        else
+                        {
+                            <span>&nbsp;&nbsp;&nbsp;</span>
+                        }
+                    </button>
+                </th>
+
+
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contact in Contacts)
+            {
+                <tr>
+                    <td><a @onclick="() => ShowContactDetails(contact.Id)">@contact.FirstName</a></td>
+                    <td>@contact.LastName</td>
+                    <td>@contact.Email</td>
+                    <td>@contact.PhoneNumber</td>
+                    <td>
+                        <button @onclick="() => EditContact(contact)" class="btn btn-success" style="width:45%">Edit</button>
+                        <button @onclick="() => ConfirmDeleteContact(contact)" class="btn btn-danger" style="width:45%">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No contacts found.</p>
+}
+
+
+
+@if (IsContactFormVisible)
+{
+    <ContactForm Contact="@SelectedContact" IsEditMode="@IsEditMode" IsAddMode="@IsAddMode" IsShowMode="@IsShowMode"
+        IsDeleteMode="@IsDeleteMode" OnSave="SaveContact" OnCancel="Cancel" OnCloseContactForm="CloseContactForm"
+        OnDeleteContactForm="DeleteContact" />
+}
+
+
+
+@code {
+    List<Contact> Contacts;
+    bool IsDeleteModalOpen;
+    [Parameter]
+    public bool IsContactFormVisible { get; set; }
+
+    bool IsEditMode;
+    bool IsAddMode;
+    bool IsShowMode;
+    bool IsDeleteMode;
+
+    Contact SelectedContact;
+    bool ascendingOrder = true;
+    string currentSortProperty = nameof(Contact.FirstName);
+
+    private void ToggleSortOrder(string propertyName)
+    {
+        if (propertyName == currentSortProperty)
+        {
+            ascendingOrder = !ascendingOrder;
+        }
+        else
+        {
+            currentSortProperty = propertyName;
+            ascendingOrder = true;
+        }
+
+        SortContacts(propertyName, ascendingOrder);
+    }
+
+    private void SortContacts(string propertyName, bool ascending)
+    {
+        if (Contacts != null && Contacts.Any())
+        {
+            switch (propertyName)
+            {
+                case nameof(Contact.FirstName):
+                    Contacts = ascending ? Contacts.OrderBy(c => c.FirstName).ToList() : Contacts.OrderByDescending(c => c.FirstName).ToList();
+                    break;
+                case nameof(Contact.LastName):
+                    Contacts = ascending ? Contacts.OrderBy(c => c.LastName).ToList() : Contacts.OrderByDescending(c => c.LastName).ToList();
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadContacts();
+    }
+
+    private async Task LoadContacts()
+    {
+        Contacts = await ContactService.GetContactsAsync();
+    }
+
+
+    private async Task ShowContactDetails(int id)
+    {
+        SelectedContact = await ContactService.GetContactByIdAsync(id);
+        if (SelectedContact != null)
+        {
+            IsContactFormVisible = true;
+            IsShowMode = true;
+        }
+    }
+
+
+    private void EditContact(Contact contact)
+    {
+        SelectedContact = contact;
+        IsEditMode = true;
+        IsContactFormVisible = true;
+    }
+
+    private void ConfirmDeleteContact(Contact contact)
+    {
+        SelectedContact = contact;
+        IsDeleteMode = true;
+        IsContactFormVisible = true;
+
+   
+    }
+
+    private void AddNewContact()
+    {
+        IsAddMode = true;
+        IsContactFormVisible = true;
+        SelectedContact = new Contact(); 
+    }
+
+    private async Task DeleteContact()
+    {
+        if (SelectedContact != null)
+        {
+            await ContactService.DeleteContactAsync(SelectedContact.Id);
+            await LoadContacts();
+            CloseContactForm();
+        }
+    }
+
+
+
+    private void SaveContact(Contact contact)
+    {
+        if (IsEditMode)
+        {
+            UpdateContact(contact);
+        }
+        else
+        {
+            AddContact(contact);
+        }
+    }
+
+    private async Task AddContact(Contact contact)
+    {
+        await ContactService.AddContactAsync(contact);
+        await LoadContacts();
+        CloseContactForm();
+    }
+
+    private async Task UpdateContact(Contact contact)
+    {
+        await ContactService.UpdateContactAsync(contact);
+        await LoadContacts();
+        CloseContactForm();
+    }
+
+    private void Cancel()
+    {
+        CloseContactForm();
+    }
+
+    private void CloseContactForm()
+    {
+        IsContactFormVisible = false;
+        IsEditMode = false;
+        IsAddMode = false;
+        IsShowMode = false;
+        IsDeleteMode = false;
+        SelectedContact = null;
+    }
+}
